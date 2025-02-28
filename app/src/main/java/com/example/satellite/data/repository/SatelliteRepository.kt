@@ -1,33 +1,33 @@
 package com.example.satellite.data.repository
 
+
 import android.content.Context
-import android.util.Log
-import com.example.satellite.data.local.SatelliteDetailEntity
+import com.example.satellite.data.model.Satellite
 import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import java.io.IOException
-import javax.inject.Inject
 
-class SatelliteRepository @Inject constructor(
-    private val localRepository: LocalSatelliteRepository,
-    private val context: Context
-) {
-    fun getSatelliteDetail(id: Int): SatelliteDetailEntity? {
 
-        val cachedDetail = localRepository.getSatelliteDetail(id)
-        if (cachedDetail != null) return cachedDetail
+class SatelliteRepository private constructor(context: Context) {
 
-        val json = try {
-            readJsonFromAssets(context, "satellite-detail.json")
-        } catch (e: Exception) {
-            Log.e("SatelliteRepository", "Error reading JSON file: ${e.message}")
-            return null
-        }
-        val details = Gson().fromJson(json, Array<SatelliteDetailEntity>::class.java).toList()
-        val detail = details.find { it.id == id }
+    private val appContext = context.applicationContext
 
-        detail?.let { localRepository.saveSatelliteDetail(it) }
-        return detail
+    fun getSatelliteList(): List<Satellite> {
+        val json = readJsonFromAssets(appContext, "satellites.json") ?: return emptyList()
+        return Gson().fromJson(json, object : TypeToken<List<Satellite>>() {}.type)
     }
+
+    companion object {
+        @Volatile private var instance: SatelliteRepository? = null
+
+        fun getInstance(context: Context): SatelliteRepository {
+            return instance ?: synchronized(this) {
+                instance ?: SatelliteRepository(context).also { instance = it }
+            }
+        }
+    }
+
+
 
     fun readJsonFromAssets(context: Context, fileName: String): String {
         return try {
@@ -36,7 +36,6 @@ class SatelliteRepository @Inject constructor(
             e.printStackTrace()
             ""
         }
-
     }
-}
 
+}
