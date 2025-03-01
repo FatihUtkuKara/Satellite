@@ -51,7 +51,7 @@ class SatelliteViewModel @Inject constructor(
     fun loadSatelliteList() {
         viewModelScope.launch(Dispatchers.IO) {
             _isLoading.postValue(true)
-            delay(5000)
+            delay(1000)
             Log.e("SatelliteViewModel", "Dara loading...")
             _satelliteListResource.postValue(Resource.Loading())
             val result = getSatelliteListUseCase()
@@ -94,23 +94,32 @@ class SatelliteViewModel @Inject constructor(
                 .distinctUntilChanged()
                 .collectLatest { query ->
 
+
+                    if (fullList.isEmpty()) {
+                        _isLoading.postValue(true)
+                        delay(1000)
                         val result = getSatelliteListUseCase()
-                    if (result is Resource.Success) {
-                        val fullList = result.data
-                        val filteredList = if (query.isEmpty()) {
-                            fullList
+                        _isLoading.postValue(false)
+
+                        if (result is Resource.Success) {
+                            fullList.clear()
+                            fullList.addAll(result.data)
+                        } else {
+                            _satelliteListResource.postValue(Resource.Error("error"))
+                            return@collectLatest
+                        }
+                    }
+
+
+                    val filteredList = if (query.isEmpty()) {
+                        fullList
                     } else {
                         fullList.filter { it.name.contains(query, ignoreCase = true) }
                     }
+
                     _satelliteListResource.postValue(Resource.Success(filteredList))
-
                 }
-                    else if (result is Resource.Error) {
-                        _satelliteListResource.postValue(Resource.Error(result.message))
-                    }
-
-    }
-}
+        }
     }
 }
 
