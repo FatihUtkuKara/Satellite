@@ -9,10 +9,20 @@ android {
     namespace = "com.example.satellite"
     compileSdk = 35
 
+    viewBinding {
+        enable = true
+    }
+
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+        }
+    }
+
     defaultConfig {
         applicationId = "com.example.satellite"
         minSdk = 24
-        targetSdk = 35
+        targetSdk = 33
         versionCode = 1
         versionName = "1.0"
 
@@ -64,6 +74,21 @@ dependencies {
 
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+
+    // JUnit (Unit Test Framework)
+    testImplementation("junit:junit:4.13.2")
+
+    // Kotlin Coroutines Test
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4")
+
+    // MockK
+    testImplementation("io.mockk:mockk:1.13.3")
+
+    // AndroidX Test
+    testImplementation("androidx.arch.core:core-testing:2.1.0")
+
+    // Robolectric
+    testImplementation("org.robolectric:robolectric:4.10")
 }
 
 kapt {

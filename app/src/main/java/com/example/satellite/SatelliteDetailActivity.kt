@@ -7,29 +7,20 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
 import com.example.satellite.data.local.SatelliteDetailEntity
+import com.example.satellite.databinding.ActivitySatelliteDetailBinding
 import com.example.satellite.util.Resource
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class SatelliteDetailActivity : AppCompatActivity() {
-
+    private lateinit var binding: ActivitySatelliteDetailBinding
     private val viewModel: SatelliteViewModel by viewModels()
-    private lateinit var nameTextView: TextView
-    private lateinit var costTextView: TextView
-    private lateinit var heightTextView: TextView
-    private lateinit var massTextView: TextView
-    private lateinit var firstFlightTextView: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_satellite_detail)
+        binding = ActivitySatelliteDetailBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        nameTextView = findViewById(R.id.satellite_name)
-        costTextView = findViewById(R.id.satellite_cost)
-        heightTextView = findViewById(R.id.satellite_height)
-        massTextView = findViewById(R.id.satellite_mass)
-        firstFlightTextView = findViewById(R.id.satellite_first_flight)
-        val positionTextView: TextView = findViewById(R.id.satellite_position)
 
         val satelliteId = intent.getIntExtra("satellite_id", -1)
         if (satelliteId != -1) {
@@ -52,16 +43,16 @@ class SatelliteDetailActivity : AppCompatActivity() {
         }
 
         viewModel.satellitePosition.observe(this) { position ->
-            positionTextView.text = "Position: (${position.first}, ${position.second})"
+            binding.satellitePosition.text = "Position: (${position.first}, ${position.second})"
         }
     }
 
     private fun updateDetailUI(detail: SatelliteDetailEntity?) {
         if (detail == null) return
 
-        costTextView.text = "Cost per launch: ${detail.costPerLaunch}$"
-        firstFlightTextView.text = "First flight: ${detail.firstFlight}"
-        heightTextView.text = "Height: ${detail.height} m"
-        massTextView.text = "Mass: ${detail.mass} kg"
+        binding.satelliteCost.text = "Cost per launch: ${detail.costPerLaunch}$"
+        binding.satelliteFirstFlight.text = "First flight: ${detail.firstFlight}"
+        binding.satelliteHeight.text = "Height: ${detail.height} m"
+        binding.satelliteMass.text = "Mass: ${detail.mass} kg"
     }
 }
