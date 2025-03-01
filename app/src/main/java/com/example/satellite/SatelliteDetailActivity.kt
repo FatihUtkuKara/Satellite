@@ -4,7 +4,10 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.example.satellite.presentation.SatelliteViewModel
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.viewModels
+import com.example.satellite.data.local.SatelliteDetailEntity
+import com.example.satellite.util.Resource
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -34,18 +37,31 @@ class SatelliteDetailActivity : AppCompatActivity() {
             viewModel.startPositionUpdates(satelliteId)
         }
 
-        viewModel.satelliteDetail.observe(this) { detail ->
-            detail?.let {
-                nameTextView.text = "ID: $satelliteId"
-                costTextView.text = "Launch Cost: $${it.costPerLaunch}"
-                heightTextView.text = "Height: ${it.height} m"
-                massTextView.text = "Mass: ${it.mass} kg"
-                firstFlightTextView.text = "First Flight: ${it.firstFlight}"
+        viewModel.satelliteDetailResource.observe(this) { resource ->
+            when (resource) {
+                is Resource.Loading -> {
+                }
+                is Resource.Success -> {
+                    updateDetailUI(resource.data)
+                }
+                is Resource.Error -> {
+                    Toast.makeText(this, "Error: ${resource.message}", Toast.LENGTH_SHORT).show()
+                }
+
             }
         }
 
         viewModel.satellitePosition.observe(this) { position ->
             positionTextView.text = "Position: (${position.first}, ${position.second})"
         }
+    }
+
+    private fun updateDetailUI(detail: SatelliteDetailEntity?) {
+        if (detail == null) return
+
+        costTextView.text = "Cost per launch: ${detail.costPerLaunch}$"
+        firstFlightTextView.text = "First flight: ${detail.firstFlight}"
+        heightTextView.text = "Height: ${detail.height} m"
+        massTextView.text = "Mass: ${detail.mass} kg"
     }
 }

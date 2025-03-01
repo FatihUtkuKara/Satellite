@@ -8,12 +8,14 @@ import android.util.Log
 import android.view.View
 import android.widget.EditText
 import android.widget.ProgressBar
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.satellite.presentation.SatelliteAdapter
 import com.example.satellite.presentation.SatelliteViewModel
+import com.example.satellite.util.Resource
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -44,16 +46,28 @@ class MainActivity : AppCompatActivity() {
             progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
         }
 
-        viewModel.satelliteList.observe(this) { satellites ->
-            if (satellites.isNotEmpty()) {
-                Log.i("MainActivity", "List upgrading...")
+        viewModel.satelliteListResource.observe(this) { resource ->
 
-                recyclerView.postDelayed({
-                    adapter.submitList(satellites)
-                    Log.i("MainActivity", "List sent to adapter.")
-                }, 200)
+            when (resource) {
+
+                is Resource.Success -> {
+                        Log.i("MainActivity", "List upgrading...")
+
+                        recyclerView.postDelayed({
+                            adapter.submitList(resource.data)
+                            Log.i("MainActivity", "List sent to adapter.")
+                        }, 200)
+                }
+                is Resource.Error -> {
+                    Toast.makeText(this, "Error: ${resource.message}", Toast.LENGTH_SHORT).show()
+
+                }
+                is Resource.Loading -> {
+                    Log.i("MainActivity", "Resource loading")
+                }
+                }
+
             }
-        }
 
         searchEditText.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {}
@@ -71,3 +85,4 @@ class MainActivity : AppCompatActivity() {
 
     }
 }
+

@@ -4,13 +4,13 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.viewModelScope
 import com.example.satellite.data.local.SatelliteDetailEntity
 import com.example.satellite.data.model.Satellite
 import com.example.satellite.domain.GetSatelliteDetailUseCase
 import com.example.satellite.domain.GetSatelliteListUseCase
 import com.example.satellite.domain.GetSatellitePositionsUseCase
+import com.example.satellite.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -26,7 +26,9 @@ class SatelliteViewModel @Inject constructor(
     private val getSatelliteListUseCase: GetSatelliteListUseCase,
     private val getSatelliteDetailUseCase: GetSatelliteDetailUseCase,
     private val getSatellitePositionsUseCase: GetSatellitePositionsUseCase
+
 ) : ViewModel() {
+    private val fullList = mutableListOf<Satellite>()
 
     private val _isLoading = MutableLiveData<Boolean>()
     val isLoading: LiveData<Boolean> = _isLoading
@@ -34,11 +36,11 @@ class SatelliteViewModel @Inject constructor(
     private val _satellitePosition = MutableLiveData<Pair<Float, Float>>()
     val satellitePosition: LiveData<Pair<Float, Float>> = _satellitePosition
 
-    private val _satelliteList = MutableLiveData<List<Satellite>>()
-    val satelliteList: LiveData<List<Satellite>> = _satelliteList.distinctUntilChanged()
+    private val _satelliteListResource = MutableLiveData<Resource<List<Satellite>>>()
+    val satelliteListResource: LiveData<Resource<List<Satellite>>> = _satelliteListResource
 
-    private val _satelliteDetail = MutableLiveData<SatelliteDetailEntity?>()
-    val satelliteDetail: LiveData<SatelliteDetailEntity?> = _satelliteDetail
+    private val _satelliteDetailResource = MutableLiveData<Resource<SatelliteDetailEntity?>>()
+    val satelliteDetailResource: LiveData<Resource<SatelliteDetailEntity?>> = _satelliteDetailResource
 
     private val searchQuery = MutableStateFlow("")
 
@@ -51,10 +53,10 @@ class SatelliteViewModel @Inject constructor(
             _isLoading.postValue(true)
             delay(5000)
             Log.e("SatelliteViewModel", "Dara loading...")
-            val satellites = getSatelliteListUseCase()
-
-            Log.e("SatelliteViewModel", "Satellite list pulled: ${satellites.size} satellite")
-            _satelliteList.postValue(satellites)
+            _satelliteListResource.postValue(Resource.Loading())
+            val result = getSatelliteListUseCase()
+            //Log.e("SatelliteViewModel", "Satellite list pulled: ${result.size} satellite")
+            _satelliteListResource.postValue(result)
             _isLoading.postValue(false)
             Log.e("SatelliteViewModel", "Data loaded!")
         }
@@ -62,8 +64,9 @@ class SatelliteViewModel @Inject constructor(
 
     fun loadSatelliteDetail(id: Int) {
         viewModelScope.launch(Dispatchers.IO) {
-            val detail = getSatelliteDetailUseCase(id)
-            _satelliteDetail.postValue(detail)
+            _satelliteDetailResource.postValue(Resource.Loading())
+            val result = getSatelliteDetailUseCase(id)
+            _satelliteDetailResource.postValue(result)
         }
     }
 
@@ -90,16 +93,25 @@ class SatelliteViewModel @Inject constructor(
                 .debounce(300)
                 .distinctUntilChanged()
                 .collectLatest { query ->
-                    if (query.isNotEmpty()) {
-                    val fullList = getSatelliteListUseCase()
-                    val filteredList = if (query.isEmpty()) {
-                        fullList
+
+                        val result = getSatelliteListUseCase()
+                    if (result is Resource.Success) {
+                        val fullList = result.data
+                        val filteredList = if (query.isEmpty()) {
+                            fullList
                     } else {
                         fullList.filter { it.name.contains(query, ignoreCase = true) }
                     }
-                    _satelliteList.postValue(filteredList)
-                    }
+                    _satelliteListResource.postValue(Resource.Success(filteredList))
+
                 }
-        }
+                    else if (result is Resource.Error) {
+                        _satelliteListResource.postValue(Resource.Error(result.message))
+                    }
+
     }
 }
+    }
+}
+
+
