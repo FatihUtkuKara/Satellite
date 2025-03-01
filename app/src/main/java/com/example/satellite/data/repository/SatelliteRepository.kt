@@ -2,40 +2,58 @@ package com.example.satellite.data.repository
 
 
 import android.content.Context
+import com.example.satellite.data.local.SatelliteDetailDao
+import com.example.satellite.data.local.SatelliteDetailEntity
+import com.example.satellite.data.model.PositionData
+import com.example.satellite.data.model.PositionResponse
 import com.example.satellite.data.model.Satellite
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.IOException
+import javax.inject.Inject
+import javax.inject.Singleton
 
-
-class SatelliteRepository private constructor(context: Context) {
-
-    private val appContext = context.applicationContext
+@Singleton
+class SatelliteRepository @Inject constructor(
+    private val satelliteDetailDao: SatelliteDetailDao,
+    @ApplicationContext private val context: Context
+)
+{
 
     fun getSatelliteList(): List<Satellite> {
-        val json = readJsonFromAssets(appContext, "satellites.json") ?: return emptyList()
+        val json = readJsonFromAssets("satellites.json") ?: return emptyList()
         return Gson().fromJson(json, object : TypeToken<List<Satellite>>() {}.type)
     }
 
-    companion object {
-        @Volatile private var instance: SatelliteRepository? = null
+    suspend fun getSatelliteDetail(id: Int): SatelliteDetailEntity? {
+        val cachedDetail = satelliteDetailDao.getSatelliteDetailById(id)
+        if (cachedDetail != null) return cachedDetail
+        val json = readJsonFromAssets("satellite-detail.json") ?: return null
+        val details = Gson().fromJson(json, Array<SatelliteDetailEntity>::class.java).toList()
+        val detail = details.find { it.id == id }
 
-        fun getInstance(context: Context): SatelliteRepository {
-            return instance ?: synchronized(this) {
-                instance ?: SatelliteRepository(context).also { instance = it }
-            }
+        detail?.let {
+            satelliteDetailDao.insertSatelliteDetail(it)
         }
+
+        return detail
     }
 
 
-
-    fun readJsonFromAssets(context: Context, fileName: String): String {
+    private fun readJsonFromAssets(fileName: String): String {
         return try {
             context.assets.open(fileName).bufferedReader().use { it.readText() }
         } catch (e: IOException) {
             e.printStackTrace()
             ""
         }
+    }
+
+    fun getSatellitePositions(id: Int): List<PositionData> {
+        val json = readJsonFromAssets("positions.json") ?: return emptyList()
+        val positionData = Gson().fromJson(json, PositionResponse::class.java)
+        return positionData.list.find { it.id == id.toString() }?.positions ?: emptyList()
     }
 
 }

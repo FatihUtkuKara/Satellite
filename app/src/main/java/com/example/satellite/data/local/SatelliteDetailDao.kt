@@ -8,8 +8,8 @@ import androidx.room.Query
 @Dao
 interface SatelliteDetailDao {
     @Query("SELECT * FROM satellite_details WHERE id = :id LIMIT 1")
-    fun getSatelliteDetailById(id: Int): SatelliteDetailEntity?
+    suspend fun getSatelliteDetailById(id: Int): SatelliteDetailEntity?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertSatelliteDetail(detail: SatelliteDetailEntity)
+    suspend fun insertSatelliteDetail(detail: SatelliteDetailEntity)
 }

@@ -8,5 +8,8 @@ import javax.inject.Inject
 class GetSatelliteDetailUseCase @Inject constructor(
     private val repository: SatelliteRepository
 ) {
+    suspend operator fun invoke(id: Int): SatelliteDetailEntity? {
+        return repository.getSatelliteDetail(id)
+    }
 
 }

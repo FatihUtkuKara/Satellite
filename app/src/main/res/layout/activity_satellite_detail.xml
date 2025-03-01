@@ -1,10 +1,52 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".SatelliteDetailActivity">
+    android:padding="16dp"
+    android:orientation="vertical">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <TextView
+        android:id="@+id/satellite_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Satellite Name"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:paddingBottom="10dp" />
+
+    <TextView
+        android:id="@+id/satellite_cost"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Launch Cost"
+        android:textSize="18sp"/>
+
+    <TextView
+        android:id="@+id/satellite_height"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Height"
+        android:textSize="18sp"/>
+
+    <TextView
+        android:id="@+id/satellite_mass"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Mass"
+        android:textSize="18sp"/>
+
+    <TextView
+        android:id="@+id/satellite_first_flight"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="First Flight"
+        android:textSize="18sp"/>
+
+    <TextView
+        android:id="@+id/satellite_position"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Position: (0,0)"
+        android:textSize="18sp"/>
+</LinearLayout>
