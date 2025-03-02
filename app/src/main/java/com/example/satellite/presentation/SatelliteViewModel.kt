@@ -51,7 +51,7 @@ class SatelliteViewModel @Inject constructor(
     fun loadSatelliteList() {
         viewModelScope.launch(Dispatchers.IO) {
             _isLoading.postValue(true)
-            delay(1000)
+            
             Log.e("SatelliteViewModel", "Dara loading...")
             _satelliteListResource.postValue(Resource.Loading())
             val result = getSatelliteListUseCase()
@@ -90,14 +90,14 @@ class SatelliteViewModel @Inject constructor(
     private fun observeSearchQuery() {
         viewModelScope.launch {
             searchQuery
-                .debounce(300)
+                .debounce(600)
                 .distinctUntilChanged()
                 .collectLatest { query ->
 
 
                     if (fullList.isEmpty()) {
                         _isLoading.postValue(true)
-                        delay(1000)
+
                         val result = getSatelliteListUseCase()
                         _isLoading.postValue(false)
 

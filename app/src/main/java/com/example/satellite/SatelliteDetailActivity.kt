@@ -23,6 +23,7 @@ class SatelliteDetailActivity : AppCompatActivity() {
 
 
         val satelliteId = intent.getIntExtra("satellite_id", -1)
+        val satelliteName = intent.getStringExtra("satellite_name") ?: "Unknown"
         if (satelliteId != -1) {
             viewModel.loadSatelliteDetail(satelliteId)
             viewModel.startPositionUpdates(satelliteId)
@@ -33,7 +34,7 @@ class SatelliteDetailActivity : AppCompatActivity() {
                 is Resource.Loading -> {
                 }
                 is Resource.Success -> {
-                    updateDetailUI(resource.data)
+                    updateDetailUI(resource.data, satelliteName)
                 }
                 is Resource.Error -> {
                     Toast.makeText(this, "Error: ${resource.message}", Toast.LENGTH_SHORT).show()
@@ -47,12 +48,18 @@ class SatelliteDetailActivity : AppCompatActivity() {
         }
     }
 
-    private fun updateDetailUI(detail: SatelliteDetailEntity?) {
+    private fun updateDetailUI(detail: SatelliteDetailEntity?,satelliteName : String) {
         if (detail == null) return
 
+        binding.satelliteName.text = satelliteName
         binding.satelliteCost.text = "Cost per launch: ${detail.costPerLaunch}$"
         binding.satelliteFirstFlight.text = "First flight: ${detail.firstFlight}"
         binding.satelliteHeight.text = "Height: ${detail.height} m"
         binding.satelliteMass.text = "Mass: ${detail.mass} kg"
+    }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+        overridePendingTransition(0, 0)
     }
 }

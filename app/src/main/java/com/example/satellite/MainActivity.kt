@@ -11,6 +11,7 @@ import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.satellite.databinding.ActivityMainBinding
@@ -29,12 +30,17 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-
+        val dividerItemDecoration = DividerItemDecoration(this, LinearLayoutManager.VERTICAL)
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
+        binding.recyclerView.addItemDecoration(dividerItemDecoration)
         val adapter = SatelliteAdapter { satelliteId ->
-            val intent = Intent(this, SatelliteDetailActivity::class.java)
-            intent.putExtra("satellite_id", satelliteId)
+            val selectedSatellite = (viewModel.satelliteListResource.value as? Resource.Success)?.data?.find { it.id == satelliteId }
+            val intent = Intent(this, SatelliteDetailActivity::class.java).apply {
+                putExtra("satellite_id", satelliteId)
+                putExtra("satellite_name", selectedSatellite?.name ?: "Unknown")
+            }
             startActivity(intent)
+            overridePendingTransition(0, 0)
         }
         binding.recyclerView.adapter = adapter
 
