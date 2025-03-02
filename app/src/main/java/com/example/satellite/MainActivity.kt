@@ -6,20 +6,19 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
 import android.view.View
-import android.widget.EditText
-import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.example.satellite.databinding.ActivityMainBinding
 import com.example.satellite.presentation.SatelliteAdapter
 import com.example.satellite.presentation.SatelliteViewModel
 import com.example.satellite.util.Resource
 import dagger.hilt.android.AndroidEntryPoint
-
+/**
+ * Main activity displaying the list of satellites.
+ */
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
@@ -30,11 +29,15 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        Log.i("MainActivity", "MainActivity created.")
+
         val dividerItemDecoration = DividerItemDecoration(this, LinearLayoutManager.VERTICAL)
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
         binding.recyclerView.addItemDecoration(dividerItemDecoration)
         val adapter = SatelliteAdapter { satelliteId ->
-            val selectedSatellite = (viewModel.satelliteListResource.value as? Resource.Success)?.data?.find { it.id == satelliteId }
+            Log.d("MainActivity", "Satellite clicked with ID: $satelliteId")
+            val selectedSatellite =
+                (viewModel.satelliteListResource.value as? Resource.Success)?.data?.find { it.id == satelliteId }
             val intent = Intent(this, SatelliteDetailActivity::class.java).apply {
                 putExtra("satellite_id", satelliteId)
                 putExtra("satellite_name", selectedSatellite?.name ?: "Unknown")
@@ -55,23 +58,25 @@ class MainActivity : AppCompatActivity() {
             when (resource) {
 
                 is Resource.Success -> {
-                        Log.i("MainActivity", "List upgrading...")
+                    Log.i("MainActivity", "List upgrading...")
 
                     binding.recyclerView.postDelayed({
-                            adapter.submitList(resource.data)
-                            Log.i("MainActivity", "List sent to adapter.")
-                        }, 200)
+                        adapter.submitList(resource.data)
+                        Log.i("MainActivity", "List sent to adapter.")
+                    }, 200)
                 }
+
                 is Resource.Error -> {
                     Toast.makeText(this, "Error: ${resource.message}", Toast.LENGTH_SHORT).show()
 
                 }
+
                 is Resource.Loading -> {
                     Log.i("MainActivity", "Resource loading")
                 }
-                }
-
             }
+
+        }
 
         binding.searchEditText.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {}
@@ -84,7 +89,6 @@ class MainActivity : AppCompatActivity() {
         })
 
         viewModel.loadSatelliteList()
-
 
 
     }

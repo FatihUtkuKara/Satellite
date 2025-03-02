@@ -21,6 +21,10 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+/**
+ * ViewModel responsible for managing satellite data and business logic.
+ * Fetches satellite list, details, and position updates.
+ */
 @HiltViewModel
 class SatelliteViewModel @Inject constructor(
     private val getSatelliteListUseCase: GetSatelliteListUseCase,
@@ -40,7 +44,8 @@ class SatelliteViewModel @Inject constructor(
     val satelliteListResource: LiveData<Resource<List<Satellite>>> = _satelliteListResource
 
     private val _satelliteDetailResource = MutableLiveData<Resource<SatelliteDetailEntity?>>()
-    val satelliteDetailResource: LiveData<Resource<SatelliteDetailEntity?>> = _satelliteDetailResource
+    val satelliteDetailResource: LiveData<Resource<SatelliteDetailEntity?>> =
+        _satelliteDetailResource
 
     private val searchQuery = MutableStateFlow("")
 
@@ -51,11 +56,10 @@ class SatelliteViewModel @Inject constructor(
     fun loadSatelliteList() {
         viewModelScope.launch(Dispatchers.IO) {
             _isLoading.postValue(true)
-            
+
             Log.e("SatelliteViewModel", "Dara loading...")
             _satelliteListResource.postValue(Resource.Loading())
             val result = getSatelliteListUseCase()
-            //Log.e("SatelliteViewModel", "Satellite list pulled: ${result.size} satellite")
             _satelliteListResource.postValue(result)
             _isLoading.postValue(false)
             Log.e("SatelliteViewModel", "Data loaded!")
@@ -83,6 +87,7 @@ class SatelliteViewModel @Inject constructor(
         }
 
     }
+
     fun updateSearchQuery(query: String) {
         searchQuery.value = query
     }

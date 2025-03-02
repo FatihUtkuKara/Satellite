@@ -1,7 +1,6 @@
 package com.example.satellite.domain
 
 
-import android.util.Log
 import com.example.satellite.data.model.Satellite
 import com.example.satellite.data.repository.SatelliteRepository
 import com.example.satellite.util.Resource
@@ -10,9 +9,8 @@ import javax.inject.Inject
 class GetSatelliteListUseCase @Inject constructor(
     private val repository: SatelliteRepository
 ) {
-    suspend operator fun invoke():Resource<List<Satellite>> {
+    suspend operator fun invoke(): Resource<List<Satellite>> {
         return try {
-            Log.e("GetSatelliteListUseCase", "Data pulling...")
             val satellites = repository.getSatelliteList()
             if (satellites.isNotEmpty()) {
                 Resource.Success(satellites)

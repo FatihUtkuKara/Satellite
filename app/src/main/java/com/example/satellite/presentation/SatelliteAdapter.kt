@@ -1,5 +1,6 @@
 package com.example.satellite.presentation
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
@@ -14,15 +15,19 @@ class SatelliteAdapter(private val onItemClick: (Int) -> Unit) :
     ListAdapter<Satellite, SatelliteAdapter.SatelliteViewHolder>(SatelliteDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SatelliteViewHolder {
-        val binding = ItemSatelliteBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return SatelliteViewHolder(binding,onItemClick)
+        val binding =
+            ItemSatelliteBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        return SatelliteViewHolder(binding, onItemClick)
     }
 
     override fun onBindViewHolder(holder: SatelliteViewHolder, position: Int) {
         holder.bind(getItem(position))
     }
 
-    class SatelliteViewHolder(private val binding: ItemSatelliteBinding, private val onItemClick: (Int) -> Unit) :
+    class SatelliteViewHolder(
+        private val binding: ItemSatelliteBinding,
+        private val onItemClick: (Int) -> Unit
+    ) :
         RecyclerView.ViewHolder(binding.root) {
 
         fun bind(satellite: Satellite) {
@@ -32,9 +37,11 @@ class SatelliteAdapter(private val onItemClick: (Int) -> Unit) :
 
 
             if (satellite.active) {
+                Log.d("SatelliteAdapter", "Active satellite: ${satellite.name}")
                 binding.imageViewStatus.setImageResource(R.drawable.baseline_brightness_1_24_green)
                 binding.satelliteStatusTextView.text = "Active"
             } else {
+                Log.d("SatelliteAdapter", "Inactive satellite: ${satellite.name}")
                 binding.imageViewStatus.setImageResource(R.drawable.baseline_brightness_1_24_red)
                 binding.satelliteStatusTextView.text = "Passive"
             }

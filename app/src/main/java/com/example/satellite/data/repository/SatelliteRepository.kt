@@ -2,6 +2,7 @@ package com.example.satellite.data.repository
 
 
 import android.content.Context
+import android.util.Log
 import com.example.satellite.data.local.SatelliteDetailDao
 import com.example.satellite.data.local.SatelliteDetailEntity
 import com.example.satellite.data.model.PositionData
@@ -14,16 +15,26 @@ import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Repository class responsible for fetching satellite data from JSON files.
+ */
 @Singleton
 class SatelliteRepository @Inject constructor(
     private val satelliteDetailDao: SatelliteDetailDao,
     @ApplicationContext private val context: Context
-)
-{
+) {
 
+    /**
+     * Reads satellite list from satellites.json*
+     */
     fun getSatelliteList(): List<Satellite> {
-        val json = readJsonFromAssets("satellites.json") ?: return emptyList()
-        return Gson().fromJson(json, object : TypeToken<List<Satellite>>() {}.type)
+        return try {
+            val json = readJsonFromAssets("satellites.json")
+            Gson().fromJson(json, object : TypeToken<List<Satellite>>() {}.type)
+        } catch (e: Exception) {
+            Log.e("SatelliteRepository", "Error reading satellite list: ${e.message}")
+            emptyList()
+        }
     }
 
     suspend fun getSatelliteDetail(id: Int): SatelliteDetailEntity? {
@@ -32,7 +43,7 @@ class SatelliteRepository @Inject constructor(
         val json = readJsonFromAssets("satellite-detail.json") ?: return null
         val details = Gson().fromJson(json, Array<SatelliteDetailEntity>::class.java).toList()
         val detail = details.find { it.id == id }
-
+        Log.i("JSON_DATA", json)
         detail?.let {
             satelliteDetailDao.insertSatelliteDetail(it)
         }

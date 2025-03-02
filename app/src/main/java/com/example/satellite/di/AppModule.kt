@@ -23,8 +23,11 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideSatelliteRepository(satelliteDao: SatelliteDetailDao,@ApplicationContext context: Context ): SatelliteRepository  {
-        return SatelliteRepository(satelliteDao, context )
+    fun provideSatelliteRepository(
+        satelliteDao: SatelliteDetailDao,
+        @ApplicationContext context: Context
+    ): SatelliteRepository {
+        return SatelliteRepository(satelliteDao, context)
     }
 
 

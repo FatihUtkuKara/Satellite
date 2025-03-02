@@ -1,11 +1,12 @@
 package com.example.satellite
 
 import android.os.Bundle
+import android.text.SpannableStringBuilder
 import androidx.appcompat.app.AppCompatActivity
 import com.example.satellite.presentation.SatelliteViewModel
-import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
+import androidx.core.text.bold
 import com.example.satellite.data.local.SatelliteDetailEntity
 import com.example.satellite.databinding.ActivitySatelliteDetailBinding
 import com.example.satellite.util.Resource
@@ -33,9 +34,11 @@ class SatelliteDetailActivity : AppCompatActivity() {
             when (resource) {
                 is Resource.Loading -> {
                 }
+
                 is Resource.Success -> {
                     updateDetailUI(resource.data, satelliteName)
                 }
+
                 is Resource.Error -> {
                     Toast.makeText(this, "Error: ${resource.message}", Toast.LENGTH_SHORT).show()
                 }
@@ -44,18 +47,25 @@ class SatelliteDetailActivity : AppCompatActivity() {
         }
 
         viewModel.satellitePosition.observe(this) { position ->
-            binding.satellitePosition.text = "Position: (${position.first}, ${position.second})"
+            val textPosition = SpannableStringBuilder()
+            textPosition.bold { append("Last Position: ") }
+                .append("(${position.first}, ${position.second})")
+            binding.satellitePosition.text = textPosition
         }
     }
 
-    private fun updateDetailUI(detail: SatelliteDetailEntity?,satelliteName : String) {
+    private fun updateDetailUI(detail: SatelliteDetailEntity?, satelliteName: String) {
         if (detail == null) return
 
         binding.satelliteName.text = satelliteName
-        binding.satelliteCost.text = "Cost per launch: ${detail.costPerLaunch}$"
-        binding.satelliteFirstFlight.text = "First flight: ${detail.firstFlight}"
-        binding.satelliteHeight.text = "Height: ${detail.height} m"
-        binding.satelliteMass.text = "Mass: ${detail.mass} kg"
+        val textCost = SpannableStringBuilder()
+        textCost.bold { append("Cost: ") }.append("${detail.costPerLaunch}")
+        binding.satelliteCost.text = textCost
+        binding.satelliteFirstFlight.text = detail.firstFlight
+        val textHeightMass = SpannableStringBuilder()
+        textHeightMass.bold { append("Height/ Mass: ") }.append("${detail.height} / ${detail.mass}")
+        binding.satelliteHeightMass.text = textHeightMass
+
     }
 
     override fun onBackPressed() {
