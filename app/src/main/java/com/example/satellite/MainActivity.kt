@@ -23,6 +23,7 @@ import dagger.hilt.android.AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private val viewModel: SatelliteViewModel by viewModels()
+    private lateinit var adapter: SatelliteAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,53 +32,78 @@ class MainActivity : AppCompatActivity() {
 
         Log.i("MainActivity", "MainActivity created.")
 
+        setupRecyclerView()
+        setupObservers()
+        setupSearchListener()
+
+        viewModel.loadSatelliteList()
+    }
+
+    /**
+     * Sets up the RecyclerView with a LinearLayoutManager and divider decorations.
+     */
+    private fun setupRecyclerView() {
         val dividerItemDecoration = DividerItemDecoration(this, LinearLayoutManager.VERTICAL)
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
         binding.recyclerView.addItemDecoration(dividerItemDecoration)
-        val adapter = SatelliteAdapter { satelliteId ->
-            Log.d("MainActivity", "Satellite clicked with ID: $satelliteId")
-            val selectedSatellite =
-                (viewModel.satelliteListResource.value as? Resource.Success)?.data?.find { it.id == satelliteId }
-            val intent = Intent(this, SatelliteDetailActivity::class.java).apply {
-                putExtra("satellite_id", satelliteId)
-                putExtra("satellite_name", selectedSatellite?.name ?: "Unknown")
-            }
-            startActivity(intent)
-            overridePendingTransition(0, 0)
+
+        adapter = SatelliteAdapter { satelliteId ->
+            onSatelliteClicked(satelliteId)
         }
         binding.recyclerView.adapter = adapter
+    }
 
-        Log.i("MainActivity", "ViewModel HashCode: ${viewModel.hashCode()}")
+    /**
+     * Sets up ViewModel observers to listen for data updates.
+     */
+    private fun setupObservers() {
         viewModel.isLoading.observe(this) { isLoading ->
             Log.i("ProgressBar", "isLoading: $isLoading")
             binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
         }
 
         viewModel.satelliteListResource.observe(this) { resource ->
-
             when (resource) {
-
                 is Resource.Success -> {
-                    Log.i("MainActivity", "List upgrading...")
+                    Log.i("MainActivity", "List updating...")
 
                     binding.recyclerView.postDelayed({
                         adapter.submitList(resource.data)
                         Log.i("MainActivity", "List sent to adapter.")
                     }, 200)
                 }
-
                 is Resource.Error -> {
                     Toast.makeText(this, "Error: ${resource.message}", Toast.LENGTH_SHORT).show()
-
                 }
-
                 is Resource.Loading -> {
                     Log.i("MainActivity", "Resource loading")
                 }
             }
-
         }
+    }
 
+    /**
+     * Handles satellite item clicks and starts the detail activity.
+     */
+    private fun onSatelliteClicked(satelliteId: Int) {
+        Log.d("MainActivity", "Satellite clicked with ID: $satelliteId")
+
+        val selectedSatellite = (viewModel.satelliteListResource.value as? Resource.Success)
+            ?.data
+            ?.find { it.id == satelliteId }
+
+        val intent = Intent(this, SatelliteDetailActivity::class.java).apply {
+            putExtra("satellite_id", satelliteId)
+            putExtra("satellite_name", selectedSatellite?.name ?: "Unknown")
+        }
+        startActivity(intent)
+        overridePendingTransition(0, 0)
+    }
+
+    /**
+     * Sets up the search EditText to listen for text changes and filter the list.
+     */
+    private fun setupSearchListener() {
         binding.searchEditText.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {}
 
@@ -87,10 +113,5 @@ class MainActivity : AppCompatActivity() {
                 viewModel.updateSearchQuery(s.toString())
             }
         })
-
-        viewModel.loadSatelliteList()
-
-
     }
 }
-
